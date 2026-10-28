@@ -62,21 +62,10 @@ def predict_length_of_treatment(raw_input, bundle):
     predicted_days = float(model.predict(X)[0])
 
     mae = bundle['test_mae']
-    population = bundle['dur_trt_population']
-    percentile = float((population <= predicted_days).mean()) * 100
-
-    if percentile < 33:
-        tier = 'Shorter than typical'
-    elif percentile < 67:
-        tier = 'Typical'
-    else:
-        tier = 'Longer than typical'
 
     return {
         'predicted_days': predicted_days,
         'mae': mae,
         'low': max(0.0, predicted_days - mae),
         'high': predicted_days + mae,
-        'percentile': percentile,
-        'tier': tier,
     }

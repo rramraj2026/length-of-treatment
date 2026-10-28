@@ -9,11 +9,6 @@ ARTIFACT_PATH = os.path.join(os.path.dirname(__file__), "artifacts", "model_bund
 
 CARD_BG = "#111827"
 RESULT_ACCENT = "#3B82F6"
-TIER_COLORS = {
-    "Shorter than typical": "#38BDF8",
-    "Typical": "#3B82F6",
-    "Longer than typical": "#8B5CF6",
-}
 SECTION_ACCENTS = {"admission": "#3B82F6", "health": "#06B6D4", "food": "#22C55E"}
 
 
@@ -300,7 +295,7 @@ if st.button("Predict length of treatment", type="primary"):
         )
     else:
         result = predict_length_of_treatment(raw_input, bundle)
-        color = TIER_COLORS[result["tier"]]
+        color = RESULT_ACCENT
         glow_dim = hex_to_rgba(color, 0.22)
         glow_bright = hex_to_rgba(color, 0.5)
 
@@ -320,12 +315,6 @@ if st.button("Predict length of treatment", type="primary"):
                 <div style="font-size:52px; font-weight:800; color:{color}; margin-top:4px;">
                     {result['predicted_days']:.0f} days
                 </div>
-                <div style="margin-top:10px;">
-                    <span style="background-color:{color}; color:#0B1220;
-                        padding:6px 20px; border-radius:999px; font-weight:700; font-size:15px;">
-                        {result['tier']}
-                    </span>
-                </div>
                 <div style="color:#94A3B8; font-size:13px; margin-top:16px;">
                     Typical range for a model this accurate: {result['low']:.0f}-{result['high']:.0f} days
                     (± {result['mae']:.0f} days, the model's average miss on real test cases)
@@ -336,7 +325,5 @@ if st.button("Predict length of treatment", type="primary"):
         )
 
         st.caption(
-            f"Longer than about {result['percentile']:.0f}% of children in this program, "
-            "based on patterns learned from past cases. This is an estimate, not a guarantee, "
-            "actual treatment length depends on how the child responds."
+            "This is an estimate, not a guarantee, actual treatment length depends on how the child responds."
         )
