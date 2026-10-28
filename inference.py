@@ -61,11 +61,6 @@ def predict_length_of_treatment(raw_input, bundle):
     model = bundle['model']
     predicted_days = float(model.predict(X)[0])
 
-    mae = bundle['test_mae']
-
     return {
         'predicted_days': predicted_days,
-        'mae': mae,
-        'low': max(0.0, predicted_days - mae),
-        'high': predicted_days + mae,
     }

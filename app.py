@@ -315,15 +315,11 @@ if st.button("Predict length of treatment", type="primary"):
                 <div style="font-size:52px; font-weight:800; color:{color}; margin-top:4px;">
                     {result['predicted_days']:.0f} days
                 </div>
-                <div style="color:#94A3B8; font-size:13px; margin-top:16px;">
-                    Typical range for a model this accurate: {result['low']:.0f}-{result['high']:.0f} days
-                    (± {result['mae']:.0f} days, the model's average miss on real test cases)
-                </div>
             </div>
             """,
             unsafe_allow_html=True,
         )
 
         st.caption(
-            "This is an estimate, not a guarantee, actual treatment length depends on how the child responds."
+            "This is an estimate, actual treatment length depends on how the child responds."
         )
