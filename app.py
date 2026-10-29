@@ -203,7 +203,7 @@ with c3:
         min_value=float(rng["household_rooms"][0]), max_value=float(rng["household_rooms"][1]),
         value=None, placeholder=f"e.g. {rng['household_rooms'][0]:.0f}-{rng['household_rooms'][1]:.0f}")
     maternal_school_level = st.number_input(
-        "Maternal education level (0-4 scale)",
+        "Maternal education level (0 = no schooling, 4 = highest level recorded in this survey)",
         min_value=float(rng["maternal_school_level"][0]), max_value=float(rng["maternal_school_level"][1]),
         value=None, step=1.0, placeholder="0-4")
 with c4:
