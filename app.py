@@ -133,8 +133,8 @@ def load_bundle():
 
 
 bundle = load_bundle()
-cat = bundle["category_levels"]
-rng = bundle["raw_ranges"]
+maps = bundle["maps"]
+rng = bundle["limits"]
 
 st.markdown(
     """
@@ -154,45 +154,48 @@ section_card_open(SECTION_ACCENTS["admission"])
 
 c1, c2 = st.columns(2)
 with c1:
-    facility = st.selectbox("Facility (Optional)", bundle["facility_list"], index=None, placeholder="Select...")
+    facility = st.selectbox("Facility (Optional)", bundle["facilities"], index=None, placeholder="Select...")
     sammam = st.selectbox("Admission type (SAM / MAM)", ["SAM", "MAM"], index=None, placeholder="Select...")
     region = st.selectbox(
-        "Region", bundle["region_list"], index=None, placeholder="Select...",
+        "Region", bundle["regions"], index=None, placeholder="Select...",
         format_func=lambda v: v.replace("_", " "))
     sex = st.selectbox(
-        "Child's sex", cat["sex"], index=None, placeholder="Select...",
+        "Child's sex", list(maps["sex"].keys()), index=None, placeholder="Select...",
         format_func=lambda v: v.capitalize())
-    cage_cat = st.selectbox(
-        "Age category at admission", cat["cage_T0_cat"], index=None, placeholder="Select...")
+    age_months = st.number_input(
+        "Child's age at admission (months)",
+        min_value=float(rng["age_months"][0]), max_value=float(rng["age_months"][1]),
+        value=None, placeholder=f"e.g. {rng['age_months'][0]:.0f}-{rng['age_months'][1]:.0f} months")
     caregiver_age = st.number_input(
         "Caregiver's age (years)",
-        min_value=float(rng["CaregiverssAge"][0]), max_value=float(rng["CaregiverssAge"][1]),
-        value=None, placeholder=f"e.g. {rng['CaregiverssAge'][0]:.0f}-{rng['CaregiverssAge'][1]:.0f}")
+        min_value=float(rng["caregiver_age"][0]), max_value=float(rng["caregiver_age"][1]),
+        value=None, placeholder=f"e.g. {rng['caregiver_age'][0]:.0f}-{rng['caregiver_age'][1]:.0f}")
 
 with c2:
     whz_adm = st.number_input(
         "Weight-for-Height Z-score at admission",
-        min_value=float(rng["whz_adm_clean"][0]), max_value=float(rng["whz_adm_clean"][1]),
-        value=None, placeholder=f"e.g. {rng['whz_adm_clean'][0]:.1f} to {rng['whz_adm_clean'][1]:.1f}")
+        min_value=float(rng["whz"][0]), max_value=float(rng["whz"][1]),
+        value=None, placeholder=f"e.g. {rng['whz'][0]:.1f} to {rng['whz'][1]:.1f}")
     whz_tag(whz_adm)
     muac_adm = st.number_input(
         "Mid-Upper Arm Circumference at admission (cm)",
-        min_value=float(rng["MUACofchildatadmission"][0]), max_value=float(rng["MUACofchildatadmission"][1]),
-        value=None, placeholder=f"e.g. {rng['MUACofchildatadmission'][0]:.1f}-{rng['MUACofchildatadmission'][1]:.1f} cm")
+        min_value=float(rng["muac"][0]), max_value=float(rng["muac"][1]),
+        value=None, placeholder=f"e.g. {rng['muac'][0]:.1f}-{rng['muac'][1]:.1f} cm")
     muac_tag(muac_adm)
     haz_adm = st.number_input(
         "Height-for-Age Z-score at admission",
-        min_value=float(rng["haz_adm_clean"][0]), max_value=float(rng["haz_adm_clean"][1]),
-        value=None, placeholder=f"e.g. {rng['haz_adm_clean'][0]:.1f} to {rng['haz_adm_clean'][1]:.1f}")
+        min_value=float(rng["haz"][0]), max_value=float(rng["haz"][1]),
+        value=None, placeholder=f"e.g. {rng['haz'][0]:.1f} to {rng['haz'][1]:.1f}")
     haz_tag(haz_adm)
-    residence = st.selectbox("Residence type", cat["residence"], index=None, placeholder="Select...")
-    severity_tier = st.selectbox(
-        "Admission severity tier", cat["admission_severity_tier"], index=None, placeholder="Select...",
-        format_func=lambda v: v.capitalize())
+    residence = st.selectbox("Residence type", list(maps["residence"].keys()), index=None, placeholder="Select...")
 
-admission_vals = [facility, sammam, region, sex, cage_cat, caregiver_age, whz_adm, muac_adm, haz_adm,
-                   residence, severity_tier]
+admission_vals = [facility, sammam, region, sex, age_months, caregiver_age, whz_adm, muac_adm, haz_adm, residence]
 section_card_close(sum(v is not None for v in admission_vals), len(admission_vals), SECTION_ACCENTS["admission"])
+
+st.caption(
+    "Admission severity tier is no longer asked separately, it's calculated automatically "
+    "from the WHZ and MUAC values above."
+)
 
 st.subheader("Household and recent health")
 section_card_open(SECTION_ACCENTS["health"])
@@ -200,32 +203,27 @@ c3, c4 = st.columns(2)
 with c3:
     household_rooms = st.number_input(
         "Number of rooms in household",
-        min_value=float(rng["household_rooms"][0]), max_value=float(rng["household_rooms"][1]),
-        value=None, placeholder=f"e.g. {rng['household_rooms'][0]:.0f}-{rng['household_rooms'][1]:.0f}")
-    maternal_school_level = st.number_input(
+        min_value=float(rng["rooms"][0]), max_value=float(rng["rooms"][1]),
+        value=None, placeholder=f"e.g. {rng['rooms'][0]:.0f}-{rng['rooms'][1]:.0f}")
+    maternal_edu = st.number_input(
         "Maternal education level (0 = no schooling, 4 = highest level recorded in this survey)",
-        min_value=float(rng["maternal_school_level"][0]), max_value=float(rng["maternal_school_level"][1]),
+        min_value=float(rng["maternal_edu"][0]), max_value=float(rng["maternal_edu"][1]),
         value=None, step=1.0, placeholder="0-4")
 with c4:
-    pneumonia = st.selectbox(
-        "Pneumonia in the last 2 weeks", cat["recent_pneumonia"], index=None, placeholder="Select...",
-        format_func=lambda v: v.capitalize())
     appetite = st.selectbox(
-        "Lost appetite in the last 2 weeks", cat["lost_appetite"], index=None, placeholder="Select...",
+        "Lost appetite in the last 2 weeks", list(maps["yes_no"].keys()), index=None, placeholder="Select...",
         format_func=lambda v: v.capitalize())
 
-health_vals = [household_rooms, maternal_school_level, pneumonia, appetite]
+health_vals = [household_rooms, maternal_edu, appetite]
 section_card_close(sum(v is not None for v in health_vals), len(health_vals), SECTION_ACCENTS["health"])
 
 st.subheader("Household food security")
 section_card_open(SECTION_ACCENTS["food"])
 ipc_phase = st.selectbox(
-    "IPC food security phase", list(bundle["ipc_map"].keys()), index=None, placeholder="Select...")
-hhs_category = st.selectbox(
-    "Household hunger scale", list(bundle["hhs_map"].keys()), index=None, placeholder="Select...")
+    "IPC food security phase", list(maps["ipc"].keys()), index=None, placeholder="Select...")
 hndwash_label = st.selectbox("Household handwashing access", ["Yes", "No"], index=None, placeholder="Select...")
 
-food_vals = [ipc_phase, hhs_category, hndwash_label]
+food_vals = [ipc_phase, hndwash_label]
 section_card_close(sum(v is not None for v in food_vals), len(food_vals), SECTION_ACCENTS["food"])
 
 st.divider()
@@ -236,42 +234,38 @@ if st.button("Predict length of treatment", type="primary"):
         "SAMMAM": sammam,
         "RegioCEGn": region,
         "sex": sex,
-        "cage_T0_cat": cage_cat,
-        "CaregiverssAge": caregiver_age,
-        "whz_adm_clean": whz_adm,
-        "MUACofchildatadmission": muac_adm,
-        "haz_adm_clean": haz_adm,
+        "age_months": age_months,
+        "caregiver_age": caregiver_age,
+        "whz": whz_adm,
+        "muac": muac_adm,
+        "haz": haz_adm,
         "residence": residence,
-        "admission_severity_tier": severity_tier,
-        "household_rooms": household_rooms,
-        "maternal_school_level": maternal_school_level,
-        "recent_pneumonia": pneumonia,
+        "rooms": household_rooms,
+        "maternal_edu": maternal_edu,
         "lost_appetite": appetite,
-        "ipc_phase_fcs": ipc_phase,
-        "hhs_category": hhs_category,
-        "hndwash": None if hndwash_label is None else (1 if hndwash_label == "Yes" else 0),
+        "ipc_phase": ipc_phase,
+        "handwashing": None if hndwash_label is None else (1 if hndwash_label == "Yes" else 0),
     }
 
     field_labels = {
         "facility": "Facility", "SAMMAM": "Admission type", "RegioCEGn": "Region",
-        "sex": "Child's sex", "cage_T0_cat": "Age category at admission",
-        "CaregiverssAge": "Caregiver's age", "whz_adm_clean": "WHZ at admission",
-        "MUACofchildatadmission": "MUAC at admission", "haz_adm_clean": "HAZ at admission",
-        "residence": "Residence type", "admission_severity_tier": "Admission severity tier",
-        "household_rooms": "Number of rooms in household",
-        "maternal_school_level": "Maternal education level",
-        "recent_pneumonia": "Pneumonia in the last 2 weeks", "lost_appetite": "Lost appetite in the last 2 weeks",
-        "ipc_phase_fcs": "IPC food security phase", "hhs_category": "Household hunger scale",
-        "hndwash": "Household handwashing access",
+        "sex": "Child's sex", "age_months": "Child's age at admission",
+        "caregiver_age": "Caregiver's age", "whz": "WHZ at admission",
+        "muac": "MUAC at admission", "haz": "HAZ at admission",
+        "residence": "Residence type",
+        "rooms": "Number of rooms in household",
+        "maternal_edu": "Maternal education level",
+        "lost_appetite": "Lost appetite in the last 2 weeks",
+        "ipc_phase": "IPC food security phase",
+        "handwashing": "Household handwashing access",
     }
-    # Facility is optional, left blank, the model falls back to the population-average
-    # facility numbers instead of blocking the prediction.
+    # Facility is optional, left blank, the model falls back to region and child
+    # details instead of blocking the prediction.
     missing = [field_labels[k] for k, v in raw_input.items() if v is None and k != "facility"]
 
     range_check_fields = {
-        "CaregiverssAge": "CaregiverssAge", "whz_adm_clean": "whz_adm_clean",
-        "MUACofchildatadmission": "MUACofchildatadmission", "haz_adm_clean": "haz_adm_clean",
-        "household_rooms": "household_rooms", "maternal_school_level": "maternal_school_level",
+        "age_months": "age_months", "caregiver_age": "caregiver_age", "whz": "whz",
+        "muac": "muac", "haz": "haz", "rooms": "rooms", "maternal_edu": "maternal_edu",
     }
     out_of_range = []
     if not missing:
@@ -319,6 +313,12 @@ if st.button("Predict length of treatment", type="primary"):
             """,
             unsafe_allow_html=True,
         )
+
+        if not result["used_facility"] and facility is not None:
+            st.caption(
+                "This facility wasn't in the model's training data, so the estimate uses "
+                "region and child details only."
+            )
 
         st.caption(
             "This is an estimate, actual treatment length depends on how the child responds."
