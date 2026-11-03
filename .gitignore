@@ -4,3 +4,4 @@ streamlit.log
 .DS_Store
 screenshots/
 artifacts/model_bundle_pre_age_months_20261103.joblib
+artifacts/model_bundle_pre_addback_20261103.joblib

@@ -192,11 +192,6 @@ with c2:
 admission_vals = [facility, sammam, region, sex, age_months, caregiver_age, whz_adm, muac_adm, haz_adm, residence]
 section_card_close(sum(v is not None for v in admission_vals), len(admission_vals), SECTION_ACCENTS["admission"])
 
-st.caption(
-    "Admission severity tier is no longer asked separately, it's calculated automatically "
-    "from the WHZ and MUAC values above."
-)
-
 st.subheader("Household and recent health")
 section_card_open(SECTION_ACCENTS["health"])
 c3, c4 = st.columns(2)
@@ -210,20 +205,25 @@ with c3:
         min_value=float(rng["maternal_edu"][0]), max_value=float(rng["maternal_edu"][1]),
         value=None, step=1.0, placeholder="0-4")
 with c4:
+    pneumonia = st.selectbox(
+        "Pneumonia in the last 2 weeks", list(maps["yes_no"].keys()), index=None, placeholder="Select...",
+        format_func=lambda v: v.capitalize())
     appetite = st.selectbox(
         "Lost appetite in the last 2 weeks", list(maps["yes_no"].keys()), index=None, placeholder="Select...",
         format_func=lambda v: v.capitalize())
 
-health_vals = [household_rooms, maternal_edu, appetite]
+health_vals = [household_rooms, maternal_edu, pneumonia, appetite]
 section_card_close(sum(v is not None for v in health_vals), len(health_vals), SECTION_ACCENTS["health"])
 
 st.subheader("Household food security")
 section_card_open(SECTION_ACCENTS["food"])
 ipc_phase = st.selectbox(
     "IPC food security phase", list(maps["ipc"].keys()), index=None, placeholder="Select...")
+hhs_category = st.selectbox(
+    "Household hunger scale", list(maps["hunger"].keys()), index=None, placeholder="Select...")
 hndwash_label = st.selectbox("Household handwashing access", ["Yes", "No"], index=None, placeholder="Select...")
 
-food_vals = [ipc_phase, hndwash_label]
+food_vals = [ipc_phase, hhs_category, hndwash_label]
 section_card_close(sum(v is not None for v in food_vals), len(food_vals), SECTION_ACCENTS["food"])
 
 st.divider()
@@ -242,8 +242,10 @@ if st.button("Predict length of treatment", type="primary"):
         "residence": residence,
         "rooms": household_rooms,
         "maternal_edu": maternal_edu,
+        "pneumonia": pneumonia,
         "lost_appetite": appetite,
         "ipc_phase": ipc_phase,
+        "hunger_scale": hhs_category,
         "handwashing": None if hndwash_label is None else (1 if hndwash_label == "Yes" else 0),
     }
 
@@ -255,8 +257,10 @@ if st.button("Predict length of treatment", type="primary"):
         "residence": "Residence type",
         "rooms": "Number of rooms in household",
         "maternal_edu": "Maternal education level",
+        "pneumonia": "Pneumonia in the last 2 weeks",
         "lost_appetite": "Lost appetite in the last 2 weeks",
         "ipc_phase": "IPC food security phase",
+        "hunger_scale": "Household hunger scale",
         "handwashing": "Household handwashing access",
     }
     # Facility is optional, left blank, the model falls back to region and child
